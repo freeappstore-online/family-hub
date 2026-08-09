@@ -1,0 +1,14 @@
+{
+  "name": "family-hub",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "engines": { "node": ">=22" },
+  "pnpm": { "onlyBuiltDependencies": ["esbuild"] },
+  "scripts": {
+    "dev": "pnpm --filter @family-hub/web dev",
+    "build": "pnpm --filter @family-hub/web build",
+    "preview": "pnpm --filter @family-hub/web preview",
+    "typecheck": "pnpm --filter @family-hub/web exec tsc -b",
+    "test": "pnpm --filter @family-hub/web test"
+  }
+}
