@@ -6,16 +6,16 @@ interface Props {
 }
 
 const EMERGENCY_NUMBERS = [
-  { label: "Emergency Services", number: "911", icon: "🚑", color: "#dc2626" },
-  { label: "Police Non-Emergency", number: "311", icon: "👮", color: "#2563eb" },
-  { label: "Poison Control", number: "1-800-222-1222", icon: "☠️", color: "#7c3aed" },
+  { label: "Emergency Services", number: "000", icon: "🚑", color: "#dc2626" },
+  { label: "Police Non-Emergency", number: "131 444", icon: "👮", color: "#2563eb" },
+  { label: "Poison Control", number: "13 11 26", icon: "☠️", color: "#7c3aed" },
 ];
 
 export function EmergencyContact({ members, onNavigateContacts }: Props) {
   const emergencyMembers = members.filter((m) => m.isEmergency);
 
   function call(number: string) {
-    window.location.href = `tel:${number}`;
+    window.location.href = `tel:${number.replace(/\s/g, "")}`;
   }
 
   return (
@@ -37,114 +37,81 @@ export function EmergencyContact({ members, onNavigateContacts }: Props) {
           Call immediately in case of emergency
         </p>
         <button
-          onClick={() => call("911")}
+          onClick={() => call("000")}
           className="w-full py-5 rounded-2xl font-bold text-white text-2xl transition-transform active:scale-95"
-          style={{ background: "var(--error)", fontSize: "1.5rem" }}
+          style={{ background: "var(--error)" }}
         >
-          📞 CALL 911
+          📞 Call 000
         </button>
       </div>
 
-      {/* Personal Emergency Contacts */}
-      <div>
-        <p className="font-bold text-xl mb-3" style={{ fontFamily: "Fraunces, serif" }}>
-          My Emergency Contacts
-        </p>
+      {/* Other Emergency Numbers */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-bold" style={{ fontFamily: "Fraunces, serif" }}>
+          Emergency Numbers
+        </h2>
+        {EMERGENCY_NUMBERS.map(({ label, number, icon, color }) => (
+          <button
+            key={number}
+            onClick={() => call(number)}
+            className="w-full flex items-center gap-4 p-4 rounded-2xl border text-left transition-all active:scale-95"
+            style={{ borderColor: "var(--line)", background: "var(--panel)" }}
+          >
+            <span
+              className="text-2xl w-12 h-12 flex items-center justify-center rounded-xl shrink-0"
+              style={{ background: color + "20" }}
+            >
+              {icon}
+            </span>
+            <div className="flex-1">
+              <p className="font-semibold" style={{ color: "var(--ink)" }}>{label}</p>
+              <p className="text-sm font-bold" style={{ color }}>{number}</p>
+            </div>
+            <span className="text-xl">📞</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Family Emergency Contacts */}
+      <div className="space-y-3">
+        <h2 className="text-lg font-bold" style={{ fontFamily: "Fraunces, serif" }}>
+          Family Emergency Contacts
+        </h2>
         {emergencyMembers.length === 0 ? (
           <div
-            className="rounded-2xl p-5 text-center"
-            style={{ background: "var(--panel)", border: "1.5px dashed var(--line)" }}
+            className="rounded-2xl p-6 text-center border"
+            style={{ borderColor: "var(--line)", background: "var(--panel)" }}
           >
             <p className="text-3xl mb-2">👥</p>
-            <p className="font-semibold mb-1">No emergency contacts set</p>
+            <p className="font-medium mb-1" style={{ color: "var(--ink)" }}>No emergency contacts yet</p>
             <p className="text-sm mb-4" style={{ color: "var(--muted)" }}>
-              Mark family members as emergency contacts in the Contacts section
+              Mark family members as emergency contacts in the Contacts section.
             </p>
             <button
               onClick={onNavigateContacts}
-              className="px-6 py-3 rounded-xl font-bold text-white"
+              className="px-4 py-2 rounded-xl text-sm font-medium text-white"
               style={{ background: "var(--accent)" }}
             >
-              Go to Contacts →
+              Go to Contacts
             </button>
           </div>
         ) : (
-          <div className="space-y-3">
-            {emergencyMembers.map((m) => (
-              <div
-                key={m.id}
-                className="rounded-2xl p-4"
-                style={{ background: "var(--panel)", border: "2px solid var(--error)" }}
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div
-                    className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl shrink-0"
-                    style={{ background: "#dc262618" }}
-                  >
-                    {m.emoji}
-                  </div>
-                  <div>
-                    <p className="font-bold text-xl">{m.name}</p>
-                    <p className="text-base" style={{ color: "var(--muted)" }}>{m.role}</p>
-                    <p className="font-semibold text-base">{m.phone}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => call(m.phone)}
-                  className="w-full py-4 rounded-xl font-bold text-white text-xl transition-transform active:scale-95"
-                  style={{ background: "var(--error)" }}
-                >
-                  📞 Call {m.name}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Other Emergency Numbers */}
-      <div>
-        <p className="font-bold text-xl mb-3" style={{ fontFamily: "Fraunces, serif" }}>
-          Important Numbers
-        </p>
-        <div className="space-y-3">
-          {EMERGENCY_NUMBERS.map((en) => (
+          emergencyMembers.map((m) => (
             <button
-              key={en.number}
-              onClick={() => call(en.number)}
-              className="w-full rounded-2xl p-4 flex items-center gap-4 transition-transform active:scale-95 text-left"
-              style={{
-                background: en.color + "15",
-                border: `2px solid ${en.color}40`,
-              }}
+              key={m.id}
+              onClick={() => call(m.phone)}
+              className="w-full flex items-center gap-4 p-4 rounded-2xl border text-left transition-all active:scale-95"
+              style={{ borderColor: "var(--line)", background: "var(--panel)" }}
             >
-              <span className="text-4xl">{en.icon}</span>
+              <span className="text-3xl">{m.emoji}</span>
               <div className="flex-1">
-                <p className="font-bold text-lg" style={{ color: en.color }}>
-                  {en.label}
-                </p>
-                <p className="text-base font-semibold" style={{ color: "var(--ink)" }}>
-                  {en.number}
-                </p>
+                <p className="font-semibold" style={{ color: "var(--ink)" }}>{m.name}</p>
+                <p className="text-sm" style={{ color: "var(--muted)" }}>{m.role} · {m.phone}</p>
               </div>
-              <span className="text-2xl" style={{ color: en.color }}>📞</span>
+              <span className="text-xl">📞</span>
             </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Safety Tips */}
-      <div
-        className="rounded-2xl p-4"
-        style={{ background: "var(--panel)", border: "1.5px solid var(--line)" }}
-      >
-        <p className="font-bold text-base mb-3">💡 Quick Safety Tips</p>
-        <ul className="space-y-2 text-sm" style={{ color: "var(--muted)" }}>
-          <li>• Stay calm and speak clearly when calling for help</li>
-          <li>• Know your home address to tell emergency services</li>
-          <li>• Keep this app accessible on your home screen</li>
-          <li>• Share emergency contacts with all family members</li>
-        </ul>
+          ))
+        )}
       </div>
     </div>
   );
