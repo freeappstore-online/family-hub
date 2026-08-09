@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Section } from "./types";
-import type { Task, Reminder, CalendarEvent, ShoppingItem, FamilyMember, SharedTask } from "./types";
+import type { Task, Reminder, CalendarEvent, ShoppingItem, FamilyMember, SharedTask, Bill } from "./types";
 import { useLocalStorage } from "./hooks/useLocalStorage";
 import { HomeDashboard } from "./components/HomeDashboard";
 import { TodoList } from "./components/TodoList";
@@ -10,29 +10,33 @@ import { ShoppingList } from "./components/ShoppingList";
 import { FamilyContacts } from "./components/FamilyContacts";
 import { EmergencyContact } from "./components/EmergencyContact";
 import { SharedTasks } from "./components/SharedTasks";
+import { BillReminder } from "./components/BillReminder";
 
 const NAV_ITEMS: { section: Section; icon: string; label: string }[] = [
-  { section: "home", icon: "🏠", label: "Home" },
-  { section: "todo", icon: "✅", label: "To-Do" },
+  { section: "home",      icon: "🏠", label: "Home" },
+  { section: "todo",      icon: "✅", label: "To-Do" },
+  { section: "bills",     icon: "💳", label: "Bills" },
   { section: "reminders", icon: "🔔", label: "Reminders" },
-  { section: "calendar", icon: "📅", label: "Calendar" },
-  { section: "shopping", icon: "🛒", label: "Shopping" },
-  { section: "contacts", icon: "👨‍👩‍👧", label: "Contacts" },
+  { section: "calendar",  icon: "📅", label: "Calendar" },
+  { section: "shopping",  icon: "🛒", label: "Shopping" },
+  { section: "contacts",  icon: "👨‍👩‍👧", label: "Contacts" },
   { section: "emergency", icon: "🚨", label: "Emergency" },
-  { section: "shared", icon: "🤝", label: "Shared" },
+  { section: "shared",    icon: "🤝", label: "Shared" },
 ];
 
-const DOCK_ITEMS: Section[] = ["home", "todo", "reminders", "shopping", "contacts"];
+// Mobile bottom dock — 5 most used
+const DOCK_ITEMS: Section[] = ["home", "todo", "bills", "shopping", "contacts"];
 
 export default function App() {
   const [section, setSection] = useState<Section>("home");
 
-  const [tasks, setTasks] = useLocalStorage<Task[]>("familyhub_tasks", []);
-  const [reminders, setReminders] = useLocalStorage<Reminder[]>("familyhub_reminders", []);
-  const [events, setEvents] = useLocalStorage<CalendarEvent[]>("familyhub_events", []);
+  const [tasks, setTasks]               = useLocalStorage<Task[]>("familyhub_tasks", []);
+  const [reminders, setReminders]       = useLocalStorage<Reminder[]>("familyhub_reminders", []);
+  const [events, setEvents]             = useLocalStorage<CalendarEvent[]>("familyhub_events", []);
   const [shoppingItems, setShoppingItems] = useLocalStorage<ShoppingItem[]>("familyhub_shopping", []);
   const [familyMembers, setFamilyMembers] = useLocalStorage<FamilyMember[]>("familyhub_members", []);
-  const [sharedTasks, setSharedTasks] = useLocalStorage<SharedTask[]>("familyhub_shared", []);
+  const [sharedTasks, setSharedTasks]   = useLocalStorage<SharedTask[]>("familyhub_shared", []);
+  const [bills, setBills]               = useLocalStorage<Bill[]>("familyhub_bills", []);
 
   function renderSection() {
     switch (section) {
@@ -43,11 +47,14 @@ export default function App() {
             reminders={reminders}
             events={events}
             sharedTasks={sharedTasks}
+            bills={bills}
             onNavigate={(s) => setSection(s as Section)}
           />
         );
       case "todo":
         return <TodoList tasks={tasks} onChange={setTasks} />;
+      case "bills":
+        return <BillReminder bills={bills} onChange={setBills} />;
       case "reminders":
         return <Reminders reminders={reminders} onChange={setReminders} />;
       case "calendar":
@@ -82,9 +89,27 @@ export default function App() {
     }
   }
 
+  // Badge counts for nav
+  const today = new Date().toISOString().split("T")[0];
+  const overdueBills = bills.filter((b) => !b.paid && b.dueDate < today).length;
+  const dueSoonBills = bills.filter((b) => {
+    if (b.paid) return false;
+    const diff = Math.round((new Date(b.dueDate + "T00:00:00").getTime() - new Date().setHours(0,0,0,0)) / 86400000);
+    return diff >= 0 && diff <= 7;
+  }).length;
+  const billBadge = overdueBills + dueSoonBills;
+
+  const overdueTaskCount = tasks.filter((t) => !t.completed && t.dueDate && t.dueDate < today).length;
+
+  function navBadge(s: Section): number {
+    if (s === "bills") return billBadge;
+    if (s === "todo") return overdueTaskCount;
+    return 0;
+  }
+
   return (
     <>
-      {/* Desktop layout */}
+      {/* ── Desktop layout ── */}
       <div className="hidden md:flex h-screen">
         <aside
           className="flex flex-col border-r h-full shrink-0"
@@ -98,13 +123,14 @@ export default function App() {
               🏡 Family Hub
             </h1>
             <p className="text-xs mt-0.5" style={{ color: "var(--muted)" }}>
-              Your family, organized
+              Your family, organised
             </p>
           </div>
 
           <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
             {NAV_ITEMS.map(({ section: s, icon, label }) => {
               const active = section === s;
+              const badge = navBadge(s);
               return (
                 <button
                   key={s}
@@ -116,7 +142,20 @@ export default function App() {
                   }}
                 >
                   <span className="text-lg leading-none">{icon}</span>
-                  <span>{label}</span>
+                  <span className="flex-1 text-left">{label}</span>
+                  {badge > 0 && (
+                    <span
+                      className="text-xs px-1.5 py-0.5 rounded-full font-bold"
+                      style={{
+                        background: active ? "rgba(255,255,255,0.3)" : (overdueBills > 0 && s === "bills" ? "#dc2626" : s === "todo" ? "#dc2626" : "#d97706"),
+                        color: "#fff",
+                        minWidth: "1.25rem",
+                        textAlign: "center",
+                      }}
+                    >
+                      {badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -138,7 +177,7 @@ export default function App() {
         <main className="flex-1 overflow-auto p-8">{renderSection()}</main>
       </div>
 
-      {/* Mobile layout */}
+      {/* ── Mobile layout ── */}
       <div className="flex flex-col h-screen md:hidden">
         <header
           className="flex items-center px-4 h-14 border-b shrink-0"
@@ -147,7 +186,6 @@ export default function App() {
           <span className="font-bold text-lg" style={{ fontFamily: "Fraunces, serif" }}>
             🏡 Family Hub
           </span>
-          {/* Show current section label on mobile */}
           <span className="ml-auto text-sm font-medium" style={{ color: "var(--muted)" }}>
             {NAV_ITEMS.find((n) => n.section === section)?.label}
           </span>
@@ -162,22 +200,30 @@ export default function App() {
           {DOCK_ITEMS.map((s) => {
             const item = NAV_ITEMS.find((n) => n.section === s)!;
             const active = section === s;
+            const badge = navBadge(s);
             return (
               <button
                 key={s}
                 onClick={() => setSection(s)}
-                className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all"
+                className="relative flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all"
                 style={{ color: active ? "var(--accent)" : "var(--muted)" }}
               >
                 <span className="text-xl leading-none">{item.icon}</span>
                 <span className="text-[10px] font-medium">{item.label}</span>
+                {badge > 0 && (
+                  <span
+                    className="absolute -top-0.5 right-1 text-[9px] px-1 rounded-full font-bold text-white"
+                    style={{ background: "#dc2626", minWidth: "1rem", textAlign: "center" }}
+                  >
+                    {badge}
+                  </span>
+                )}
               </button>
             );
           })}
-          {/* More button for non-dock sections */}
+          {/* More button */}
           <button
             onClick={() => {
-              // Cycle through non-dock sections
               const nonDock = NAV_ITEMS.filter((n) => !DOCK_ITEMS.includes(n.section));
               const currentIdx = nonDock.findIndex((n) => n.section === section);
               const next = nonDock[(currentIdx + 1) % nonDock.length];

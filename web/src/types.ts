@@ -6,7 +6,8 @@ export type Section =
   | "shopping"
   | "contacts"
   | "emergency"
-  | "shared";
+  | "shared"
+  | "bills";
 
 export interface Task {
   id: string;
@@ -62,4 +63,16 @@ export interface SharedTask {
   completedAt?: string;
   createdAt: string;
   priority: "low" | "medium" | "high";
+}
+
+export interface Bill {
+  id: string;
+  name: string;
+  amount: number;
+  dueDate: string; // YYYY-MM-DD
+  recurring: "none" | "weekly" | "fortnightly" | "monthly" | "quarterly" | "yearly";
+  paid: boolean;
+  paidDate?: string;
+  createdAt: string;
+  notified?: boolean;
 }
