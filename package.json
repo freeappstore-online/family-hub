@@ -8,7 +8,6 @@
     "dev": "pnpm --filter @family-hub/web dev",
     "build": "pnpm --filter @family-hub/web build",
     "preview": "pnpm --filter @family-hub/web preview",
-    "typecheck": "pnpm --filter @family-hub/web exec tsc -b",
-    "test": "pnpm --filter @family-hub/web test"
+    "typecheck": "pnpm --filter @family-hub/web exec tsc -b"
   }
 }
