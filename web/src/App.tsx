@@ -11,6 +11,7 @@ import { FamilyContacts } from "./components/FamilyContacts";
 import { EmergencyContact } from "./components/EmergencyContact";
 import { SharedTasks } from "./components/SharedTasks";
 import { BillReminder } from "./components/BillReminder";
+import { localDateStr } from "./utils/date";
 
 const NAV_ITEMS: { section: Section; icon: string; label: string }[] = [
   { section: "home",      icon: "🏠", label: "Home" },
@@ -90,7 +91,7 @@ export default function App() {
   }
 
   // Badge counts for nav
-  const today = new Date().toISOString().split("T")[0];
+  const today = localDateStr();
   const overdueBills = bills.filter((b) => !b.paid && b.dueDate < today).length;
   const dueSoonBills = bills.filter((b) => {
     if (b.paid) return false;

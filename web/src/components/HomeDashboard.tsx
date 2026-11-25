@@ -1,4 +1,5 @@
 import type { Task, Reminder, CalendarEvent, SharedTask, Bill } from "../types";
+import { localDateStr } from "../utils/date";
 
 interface Props {
   tasks: Task[];
@@ -10,7 +11,7 @@ interface Props {
 }
 
 function todayStr() {
-  return new Date().toISOString().split("T")[0];
+  return localDateStr();
 }
 
 function formatDate(dateStr: string) {

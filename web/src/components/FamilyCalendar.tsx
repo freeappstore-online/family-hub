@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { CalendarEvent } from "../types";
+import { localDateStr } from "../utils/date";
 
 interface Props {
   events: CalendarEvent[];
@@ -90,7 +91,7 @@ export function FamilyCalendar({ events, onChange }: Props) {
   const selectedEvents = selectedDate ? events.filter((e) => e.date === selectedDate) : [];
 
   const upcomingEvents = events
-    .filter((e) => e.date >= today.toISOString().split("T")[0])
+    .filter((e) => e.date >= localDateStr(today))
     .sort((a, b) => a.date.localeCompare(b.date))
     .slice(0, 6);
 

@@ -307,7 +307,7 @@ export function SharedTasks({ tasks, members, onChange }: Props) {
                     {task.dueDate && (
                       <p className="text-xs mt-1" style={{ color: "var(--muted)" }}>
                         📅 Due:{" "}
-                        {new Date(task.dueDate).toLocaleDateString("en-US", {
+                        {new Date(task.dueDate + "T00:00:00").toLocaleDateString("en-US", {
                           weekday: "short", month: "short", day: "numeric",
                         })}
                       </p>

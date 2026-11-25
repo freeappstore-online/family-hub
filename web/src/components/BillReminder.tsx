@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Bill } from "../types";
+import { localDateStr } from "../utils/date";
 
 interface Props {
   bills: Bill[];
@@ -11,13 +12,13 @@ function genId() {
 }
 
 function todayStr() {
-  return new Date().toISOString().split("T")[0];
+  return localDateStr();
 }
 
 function daysDiff(dateStr: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const due = new Date(dateStr);
+  const due = new Date(dateStr + "T00:00:00");
   due.setHours(0, 0, 0, 0);
   return Math.round((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
@@ -41,7 +42,7 @@ function nextDueDate(current: string, recurring: Bill["recurring"]): string {
     case "yearly":       d.setFullYear(d.getFullYear() + 1); break;
     default: return current;
   }
-  return d.toISOString().split("T")[0];
+  return localDateStr(d);
 }
 
 function getBillStatus(bill: Bill): "paid" | "overdue" | "due-soon" | "upcoming" {
